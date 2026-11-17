@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>항체 설계·평가 매뉴얼</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --panel:#fff; --ink:#15181d; --muted:#5d6672;
+    --line:#e3e6eb; --accent:#2a6df4; --accent-soft:#eaf1ff;
+    --red:#e03131; --red-soft:#fdeceb;
+    --green:#1f9254; --green-soft:#e6f6ed;
+    --amber:#b7791f; --amber-soft:#fdf3e2;
+    --code:#f2f4f7; --radius:10px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","Microsoft YaHei","Noto Sans KR","Noto Sans SC",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --bg:#14161a; --panel:#1b1e24; --ink:#e8eaee; --muted:#9aa3b0;
+    --line:#2b2f37; --accent:#6c9bff; --accent-soft:#1e2a44;
+    --red:#f0655c; --red-soft:#331d1b;
+    --green:#4ec07f; --green-soft:#17301f;
+    --amber:#e0a94a; --amber-soft:#332715; --code:#23272e;}}
+  :root[data-theme="dark"]{
+    --bg:#14161a; --panel:#1b1e24; --ink:#e8eaee; --muted:#9aa3b0;
+    --line:#2b2f37; --accent:#6c9bff; --accent-soft:#1e2a44;
+    --red:#f0655c; --red-soft:#331d1b;
+    --green:#4ec07f; --green-soft:#17301f;
+    --amber:#e0a94a; --amber-soft:#332715; --code:#23272e;}
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:76px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.62;-webkit-font-smoothing:antialiased}
+  html[lang="ko"] body{word-break:keep-all;overflow-wrap:break-word}
+  html[lang="ko"] code{word-break:break-all}
+  h1,h2,h3{text-wrap:balance}
+  p,li,figcaption{text-wrap:pretty}
+
+  header.top{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--panel) 92%,transparent);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .top-inner{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
+  .brand{font-weight:700;font-size:15px;margin-right:auto;display:flex;align-items:center;gap:8px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
+  .brand small{display:block;font-weight:400;font-size:11.5px;color:var(--muted)}
+  .seg{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--panel)}
+  .seg button{border:0;background:transparent;color:var(--muted);font:inherit;font-size:13px;padding:6px 13px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
+  .iconbtn{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;
+    width:34px;height:34px;cursor:pointer;font-size:15px;line-height:1}
+  .menubtn{display:none}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:230px 1fr;gap:30px;align-items:start}
+  nav.side{position:sticky;top:62px;padding:20px 0 40px;max-height:calc(100vh - 62px);overflow:auto}
+  nav.side ol{list-style:none;margin:0;padding:0}
+  nav.side a{display:block;padding:6px 10px;border-radius:7px;color:var(--muted);text-decoration:none;
+    font-size:13.5px;border-left:2px solid transparent}
+  nav.side a:hover{background:var(--accent-soft);color:var(--ink)}
+  nav.side a.active{color:var(--accent);font-weight:600;background:var(--accent-soft);border-left-color:var(--accent)}
+  main{padding:20px 0 110px;min-width:0}
+
+  .hero{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px;margin-bottom:22px}
+  .hero h1{margin:0 0 8px;font-size:25px;letter-spacing:-.02em}
+  .hero p{margin:0;color:var(--muted);font-size:14.5px;max-width:64ch;text-wrap:balance}
+  .pipe{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
+  .pipe span{font-size:12.5px;padding:5px 11px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-weight:600;white-space:nowrap}
+  .pipe i{color:var(--muted);font-style:normal;align-self:center}
+
+  section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-bottom:20px;scroll-margin-top:70px}
+  .snum{display:inline-block;font:600 12px/1 var(--mono);color:var(--accent);background:var(--accent-soft);
+    padding:5px 9px;border-radius:6px;margin-bottom:10px}
+  section>h2{margin:0 0 6px;font-size:20px;letter-spacing:-.015em}
+  section>.lede{color:var(--muted);margin:0 0 18px;font-size:14.5px;text-wrap:balance}
+  h3{font-size:15.5px;margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+  h3::before{content:"";width:3px;height:15px;background:var(--accent);border-radius:2px;flex:0 0 auto}
+  p{margin:0 0 12px;font-size:14.5px}
+  ul{margin:0 0 14px;padding-left:20px;font-size:14.5px}
+  li{margin:4px 0}
+  code{font-family:var(--mono);font-size:12.8px;background:var(--code);padding:2px 5px;border-radius:4px}
+
+  /* 주석 스크린샷 + 번호 설명 */
+  .shot{margin:0 0 22px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--code)}
+  .shot img{width:100%;display:block}
+  .shot .ph{min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:6px;color:var(--muted);text-align:center;padding:26px 18px}
+  .shot .ph .key{font:600 12px/1.4 var(--mono);color:var(--accent)}
+  .shot .cap{padding:11px 14px;font-size:12.5px;color:var(--muted);background:var(--panel);border-top:1px solid var(--line)}
+  ol.legend{list-style:none;margin:0;padding:12px 14px;background:var(--panel);border-top:1px solid var(--line);
+    counter-reset:n;font-size:14px}
+  ol.legend li{counter-increment:n;position:relative;padding:4px 0 4px 32px;margin:0}
+  ol.legend li::before{content:counter(n);position:absolute;left:0;top:5px;width:22px;height:22px;border-radius:50%;
+    background:var(--red);color:#fff;font:700 12px/22px var(--sans);text-align:center}
+  ol.legend b{font-weight:650}
+
+  /* 결과 플롯 묶음 */
+  .gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:12px;margin:0 0 20px}
+  .gal figure{margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);
+    display:flex;flex-direction:column}
+  .gal img{width:100%;display:block;background:#fff}
+  .gal .ph{min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--muted);
+    font:600 11.5px var(--mono);padding:16px;text-align:center;background:var(--code)}
+  .gal figcaption{padding:9px 11px;font-size:12.5px;border-top:1px solid var(--line)}
+  .gal figcaption b{display:block;font-size:13px;margin-bottom:2px}
+  .gal figcaption span{color:var(--muted)}
+
+  .tw{overflow-x:auto;margin:0 0 16px;border:1px solid var(--line);border-radius:var(--radius)}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:440px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--code);font-weight:650;font-size:12.5px;color:var(--muted);white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+  td code{white-space:nowrap}
+  .g{color:var(--green);font-weight:650}
+  .a{color:var(--amber);font-weight:650}
+  .r{color:var(--red);font-weight:650}
+  .g,.a,.r,.nw{white-space:nowrap}
+
+  .note,.warn,.bad{padding:12px 15px;border-radius:0 var(--radius) var(--radius) 0;margin:0 0 16px;font-size:14px}
+  .note{border-left:3px solid var(--accent);background:var(--accent-soft)}
+  .warn{border-left:3px solid var(--amber);background:var(--amber-soft)}
+  .bad{border-left:3px solid var(--red);background:var(--red-soft)}
+  .note p:last-child,.warn p:last-child,.bad p:last-child{margin:0}
+  .ttl{display:block;font-weight:700;font-size:12.5px;margin-bottom:3px}
+
+  footer{max-width:1240px;margin:0 auto;padding:0 16px 56px;color:var(--muted);font-size:12.5px;text-align:center}
+
+  @media (max-width:900px){
+    .wrap{grid-template-columns:1fr;gap:0}
+    nav.side{position:static;max-height:none;padding:14px 0;border-bottom:1px solid var(--line);display:none}
+    nav.side.open{display:block}
+    .menubtn{display:inline-block}
+    .hero,section{padding:20px 17px}
+    .hero h1{font-size:21px}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <span class="brand"><span class="dot"></span><span id="brand"></span></span>
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" data-lang="ko" aria-pressed="true">한국어</button>
+      <button type="button" data-lang="zh" aria-pressed="false">中文</button>
+    </div>
+    <button class="iconbtn" id="theme" type="button" title="Theme">◐</button>
+    <button class="iconbtn menubtn" id="menu" type="button" title="Menu">☰</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="side" id="side"><ol id="toc"></ol></nav>
+  <main id="main"></main>
+</div>
+
+<footer><p id="foot"></p></footer>
+
+<script>
+/* ===========================================================================
+   본문은 모두 {ko, zh} 쌍으로 이 객체 안에만 있습니다.
+   블록 종류: h3 / p / ul / table / note / warn / bad
+              shot : 주석 스크린샷 + 빨간 번호 설명 (images/<id>.png)
+              gal  : 결과 플롯 묶음
+   =========================================================================== */
+
+const T = {
+brand:{ko:'항체 설계·평가 매뉴얼', zh:'抗体设计与评估手册'},
+brandsub:{ko:'배재대학교 · Curieus', zh:'培材大学 · Curieus'},
+foot:{ko:'배재대학교 · Curieus 플랫폼 기준 · 2026-11',
+      zh:'培材大学 · 基于 Curieus 平台 · 2026-11'},
+need:{ko:'캡처 필요', zh:'需要截图'},
+
+hero:{
+  title:{ko:'항체 설계와 세 가지 평가', zh:'抗体设计与三项评估'},
+  lede:{ko:'항체를 설계하고 신뢰도·개발성·면역원성을 평가합니다.',
+        zh:'设计抗体并评估置信度、可开发性与免疫原性。'},
+  chips:{ko:['RFantibody 설계','신뢰도','TAP 개발성','ImmuScope 면역원성'],
+         zh:['RFantibody 设计','置信度','TAP 可开发性','ImmuScope 免疫原性']}
+},
+
+sections:[
+
+/* ==================== 0. 개요 ==================== */
+{
+ id:'overview', num:'STEP 0',
+ nav:{ko:'0. 전체 흐름', zh:'0. 全流程'},
+ h2:{ko:'전체 흐름', zh:'全流程'},
+ lede:{ko:'작업은 네 번 실행합니다. 앞 작업의 결과 파일이 다음 작업의 입력이 됩니다.',
+       zh:'共运行四次作业。前一次的结果文件是下一次的输入。'},
+ blocks:[
+  {table:{
+    head:{ko:['순서','모델','입력','결과'], zh:['顺序','模型','输入','结果']},
+    rows:{
+      ko:[['1','RFantibody','항원 PDB + 프레임워크 + 결합 핵심 잔기','설계 복합체 PDB, 서열, 점수'],
+          ['2','(1의 결과 화면)','—','<span class="nw">ipSAE</span>, pLDDT, RMSD, 접촉'],
+          ['3','TAP','1의 설계 PDB','CDR 길이, PSH, PPC, PNC, SFvCSP'],
+          ['4','ImmuScope','1의 H·L 서열','EL / CD4 / IM 점수']],
+      zh:[['1','RFantibody','抗原 PDB + 框架 + 结合关键残基','设计复合物 PDB、序列、分数'],
+          ['2','（第 1 步的结果界面）','—','<span class="nw">ipSAE</span>、pLDDT、RMSD、接触'],
+          ['3','TAP','第 1 步的设计 PDB','CDR 长度、PSH、PPC、PNC、SFvCSP'],
+          ['4','ImmuScope','第 1 步的 H·L 序列','EL / CD4 / IM 分数']]}}},
+  {p:{ko:'모든 작업은 CU(크레딧)를 소모합니다. 표준 GPU 기준 분당 6 CU이며, 제출 전 화면 오른쪽 아래에 차감 예정량이 표시됩니다.',
+      zh:'所有作业都会消耗 CU（额度）。标准 GPU 为每分钟 6 CU，提交前界面右下角会显示预计扣除量。'}},
+
+  {h3:{ko:'모델 찾기', zh:'查找模型'}},
+  {shot:{id:'01-lab',
+    cap:{ko:'Lab 화면. 사용할 수 있는 모델이 모두 여기에 있습니다.', zh:'Lab 界面。所有可用模型都在这里。'},
+    items:{ko:['<b>검색창</b> — 모델 이름을 입력합니다.',
+               '<b>카테고리 필터</b> — 항체, 분자 동역학, Kit으로 좁힙니다.',
+               '<b>모델 카드</b> — 카드를 누르면 입력 화면이 열립니다.'],
+           zh:['<b>搜索框</b> — 输入模型名称。',
+               '<b>分类筛选</b> — 按抗体、分子动力学、Kit 缩小范围。',
+               '<b>模型卡片</b> — 点击卡片打开输入界面。']}}},
+  {shot:{id:'02-search-rfantibody',
+    cap:{ko:'어느 화면에서든 Ctrl+K(Mac은 ⌘K)로 모델을 바로 검색할 수 있습니다.',
+         zh:'在任何界面都可以用 Ctrl+K（Mac 为 ⌘K）直接搜索模型。'},
+    items:{ko:['<b>검색어 입력</b> — <code>rfan</code>처럼 앞 글자만 쳐도 됩니다.',
+               '<b>결과 선택</b> — Enter를 누르면 해당 모델이 열립니다.'],
+           zh:['<b>输入关键词</b> — 只打前几个字母如 <code>rfan</code> 也可以。',
+               '<b>选择结果</b> — 按 Enter 打开该模型。']}}}
+ ]
+},
+
+/* ==================== 1. RFantibody ==================== */
+{
+ id:'rfantibody', num:'STEP 1',
+ nav:{ko:'1. 항체 설계', zh:'1. 抗体设计'},
+ h2:{ko:'항체 설계 — RFantibody', zh:'抗体设计 — RFantibody'},
+ lede:{ko:'항원 구조와 결합시킬 잔기를 지정하면 CDR 백본 생성, 서열 설계, 구조 검증이 순서대로 실행됩니다. 입력은 세 단계이며 화면 아래 화살표 버튼으로 이동합니다.',
+       zh:'指定抗原结构与要结合的残基后，依次执行 CDR 主链生成、序列设计、结构验证。输入分三步，用界面下方的箭头按钮切换。'},
+ blocks:[
+  {h3:{ko:'1단계 · 항체 프레임워크 설정', zh:'第 1 步 · 抗体框架设置'}},
+  {shot:{id:'03-rfab-framework',
+    cap:{ko:'CDR을 새로 설계할 바탕이 되는 항체를 고릅니다.', zh:'选择作为重新设计 CDR 基础的抗体。'},
+    items:{ko:['<b>프레임워크 소스</b> — <code>기본 프레임워크</code>를 선택합니다. 직접 만든 항체가 있을 때만 업로드를 씁니다.',
+               '<b>프레임워크 유형</b> — 중쇄·경쇄 두 체인이면 <code>Antibody</code>, 단일 체인이면 <code>Nanobody</code>입니다. 이번 평가에서는 <code>Antibody</code>를 선택합니다.',
+               '<b>프레임워크 템플릿</b> — Opdivo(Nivolumab), Avastin(Bevacizumab), IGHV3-23/IGKV1-39, IGHV3-23/IGKV3-20, Trastuzumab Fv 중에서 고릅니다. 이번 평가에서는 아무 템플릿이나 하나 선택하면 됩니다.',
+               '<b>디자인 루프 지정값</b> — 템플릿을 고르면 <code>[H1:7,H2:6,H3:4,L1:11,L2:7,L3:9]</code>처럼 자동으로 채워집니다. 기본값을 그대로 쓰면 되고, 직접 수정할 수도 있습니다.',
+               '<b>분석 시작</b> — 세 단계를 모두 채운 뒤 누릅니다. 왼쪽에 차감 예정 CU가 표시됩니다.'],
+           zh:['<b>框架来源</b> — 选择 <code>基本框架</code>。只有自备抗体时才使用上传。',
+               '<b>框架类型</b> — 重链轻链两条链选 <code>Antibody</code>，单链选 <code>Nanobody</code>。本次评估选择 <code>Antibody</code>。',
+               '<b>框架模板</b> — 从 Opdivo(Nivolumab)、Avastin(Bevacizumab)、IGHV3-23/IGKV1-39、IGHV3-23/IGKV3-20、Trastuzumab Fv 中选择。本次评估任选其一即可。',
+               '<b>设计环指定值</b> — 选定模板后会自动填入如 <code>[H1:7,H2:6,H3:4,L1:11,L2:7,L3:9]</code>。可直接使用默认值，也可以自行修改。',
+               '<b>开始分析</b> — 三步全部填完后点击。左侧显示预计扣除的 CU。']}}},
+  {warn:{ttl:{ko:'디자인 루프 지정값', zh:'设计环指定值'},
+         body:{ko:'자동으로 채워진 값을 지우고 빈칸으로 두면 안 됩니다. 길이는 Chothia 정의 기준이므로 IMGT 기준 길이를 넣으면 다른 결과가 나옵니다.',
+               zh:'不要清空自动填入的值。长度采用 Chothia 定义，填入 IMGT 标准的长度会得到不同结果。'}}},
+
+  {h3:{ko:'2단계 · 구조 입력', zh:'第 2 步 · 结构输入'}},
+  {shot:{id:'04-rfab-target',
+    cap:{ko:'항체가 결합할 표적과 결합 위치를 지정합니다.', zh:'指定抗体要结合的靶标与结合位置。'},
+    items:{ko:['<b>타겟 구조</b> — PDB ID(예: <code>2OQP</code>)를 입력하고 <code>불러오기</code>를 누르거나 파일을 올립니다. 아래에 <code>구조 파일 검증 완료</code>가 뜨면 정상입니다.',
+               '<b>항원 체인</b> — 사용할 체인을 체크합니다. 결합 핵심 잔기는 여기서 체크한 체인 안에서만 고를 수 있습니다.',
+               '<b>결합 핵심 잔기</b> — 서열에서 클릭·드래그로 선택하고, 우클릭·드래그로 해제합니다. 오른쪽 3D 화면에 선택 부위가 초록색으로 표시됩니다.',
+               '<b>선택된 잔기</b> — <code>A24,A25,…,A34</code> 형태로 확인합니다.'],
+           zh:['<b>靶标结构</b> — 输入 PDB ID（如 <code>2OQP</code>）后点击 <code>载入</code>，或上传文件。下方出现 <code>结构文件验证完成</code> 即正常。',
+               '<b>抗原链</b> — 勾选要使用的链。结合关键残基只能在此处勾选的链中选取。',
+               '<b>结合关键残基</b> — 在序列上点击并拖动选择，右键拖动取消。右侧 3D 画面中所选部位显示为绿色。',
+               '<b>已选残基</b> — 确认形如 <code>A24,A25,…,A34</code>。']}}},
+  {bad:{ttl:{ko:'결합 핵심 잔기 선택', zh:'结合关键残基的选择'},
+        body:{ko:'단백질 안쪽에 묻힌 잔기를 고르면 항체가 접근할 수 없어 설계가 실패합니다. 3D 화면을 돌려 표면에 드러나 있는지 확인합니다.',
+              zh:'若选中埋在蛋白内部的残基，抗体无法接近，设计会失败。请旋转 3D 画面确认残基确实暴露在表面。'}}},
+
+  {h3:{ko:'3단계 · 디자인 파라미터', zh:'第 3 步 · 设计参数'}},
+  {shot:{id:'05-rfab-params',
+    cap:{ko:'기본값 그대로 실행해도 됩니다. 아래 네 개만 의미를 알아 두면 충분합니다.',
+         zh:'可以直接用默认值运行。只需了解下面四项的含义。'},
+    items:{ko:['<b>생성할 디자인 수</b> (기본 1) — 만들 설계 개수입니다. 늘리면 좋은 후보가 나올 확률이 오르지만 시간과 CU도 같이 늘어납니다.',
+               '<b>설계 조기 종료 기준</b> (기본 5) — 결합 핵심 잔기와 충분히 가까워지면 멈추는 기준입니다.',
+               '<b>설계 과정 스텝 수</b> (기본 50) — 키우면 느려지는 대신 정교해집니다.',
+               '<b>서열 설계 모델</b> (기본 ProteinMPNN) — 항체에 특화된 <code>AbMPNN</code>, <code>AntiBMPNN</code>으로 바꿔 비교할 수 있습니다.',
+               '<b>분석 시작</b> — 누르면 작업이 제출됩니다.'],
+           zh:['<b>生成设计数</b>（默认 1）— 要生成的设计数量。增加可提高出好候选的概率，但时间与 CU 也同比增加。',
+               '<b>提前终止标准</b>（默认 5）— 与结合关键残基足够接近时停止的判据。',
+               '<b>设计过程步数</b>（默认 50）— 增大则更慢但更精细。',
+               '<b>序列设计模型</b>（默认 ProteinMPNN）— 可改为抗体专用的 <code>AbMPNN</code>、<code>AntiBMPNN</code> 进行比较。',
+               '<b>开始分析</b> — 点击后提交作业。']}}},
+
+  {h3:{ko:'작업 확인', zh:'查看作业'}},
+  {shot:{id:'06-result-list',
+    cap:{ko:'상단 <code>Result</code> 메뉴에서 제출한 작업을 확인합니다.', zh:'在顶部 <code>Result</code> 菜单中查看已提交的作业。'},
+    items:{ko:['<b>상태</b> — <code>Pending</code>은 대기, <code>입력중</code>은 미제출, <code>Done</code>은 완료입니다.',
+               '<b>결과 보기</b> — <code>Done</code>인 작업을 누르면 결과 화면으로 들어갑니다.',
+               '<b>입력 파일과 파라미터</b> — 어떤 값으로 돌렸는지 그대로 남습니다. 보고서에 이 내용을 적습니다.'],
+           zh:['<b>状态</b> — <code>Pending</code> 为等待，<code>输入中</code> 为未提交，<code>Done</code> 为完成。',
+               '<b>查看结果</b> — 点击 <code>Done</code> 的作业进入结果界面。',
+               '<b>输入文件与参数</b> — 完整保留运行时的设置。报告中需记录这些内容。']}}}
+ ]
+},
+
+/* ==================== 2. 신뢰도 ==================== */
+{
+ id:'confidence', num:'STEP 2',
+ nav:{ko:'2. 신뢰도 평가', zh:'2. 置信度评估'},
+ h2:{ko:'신뢰도 평가 — ipSAE · pLDDT · 접촉', zh:'置信度评估 — ipSAE · pLDDT · 接触'},
+ lede:{ko:'설계 모델은 어떤 입력을 주든 구조를 만들어 냅니다. 그 구조를 믿을 수 있는지는 RFantibody 결과 화면에서 바로 확인합니다. 별도 작업을 돌릴 필요가 없습니다.',
+       zh:'无论给什么输入，设计模型都会生成结构。该结构是否可信，直接在 RFantibody 的结果界面确认，无需另外运行作业。'},
+ blocks:[
+  {h3:{ko:'후보 비교 — 분포 탭', zh:'候选比较 — 分布标签页'}},
+  {shot:{id:'07-conf-distribution',
+    cap:{ko:'설계한 후보들을 한 화면에서 비교합니다.', zh:'在同一界面比较设计出的各个候选。'},
+    items:{ko:['<b>분포 / 지표 상세</b> — 두 탭을 오갑니다. 지금은 <code>분포</code>입니다.',
+               '<b>후보 표</b> — <code>ipSAE</code>, <code>pLDDT</code>, <code>RMSD</code> 세 지표가 후보별로 나옵니다. 열 이름을 누르면 정렬됩니다.',
+               '<b>산점도</b> — 가로축 <code>pLDDT</code>, 세로축 <code>ipSAE</code>입니다. 점을 누르면 오른쪽 3D 구조가 바뀌고, 축 이름을 누르면 지표를 바꿀 수 있습니다.',
+               '<b>구조 목록</b> — 눈 아이콘으로 표시를 켜고 끕니다. 두 후보를 겹쳐 비교할 때 씁니다.'],
+           zh:['<b>分布 / 指标详情</b> — 在两个标签页间切换。当前为 <code>分布</code>。',
+               '<b>候选表</b> — 按候选列出 <code>ipSAE</code>、<code>pLDDT</code>、<code>RMSD</code> 三项指标。点击列名可排序。',
+               '<b>散点图</b> — 横轴 <code>pLDDT</code>，纵轴 <code>ipSAE</code>。点击点位可切换右侧 3D 结构，点击轴名可更换指标。',
+               '<b>结构列表</b> — 用眼睛图标开关显示。用于叠加比较两个候选。']}}},
+  {table:{
+    head:{ko:['지표','방향','의미'], zh:['指标','方向','含义']},
+    rows:{
+      ko:[['<code>pLDDT</code>','<span class="g">높을수록 좋음</span>','구조 예측 신뢰도. 70 이상이면 백본을 믿을 수 있고, 50 미만이면 믿을 수 없습니다.'],
+          ['<code>ipSAE</code>','<span class="g">높을수록 좋음</span>','항체와 항원이 맞물린 계면의 품질입니다. <b>최소 0.65</b> 이상인 후보만 남기고, 그 안에서 순위를 매깁니다.'],
+          ['<code>RMSD</code>','<span class="a">낮을수록 좋음</span>','설계한 자세와 검증 단계에서 다시 예측한 자세의 차이입니다. 값이 크다고 바로 실패는 아니며 후보 간 비교로 봅니다.']],
+      zh:[['<code>pLDDT</code>','<span class="g">越高越好</span>','结构预测置信度。70 以上主链可信，低于 50 不可信。'],
+          ['<code>ipSAE</code>','<span class="g">越高越好</span>','抗体与抗原咬合界面的质量。只保留 <b>0.65 以上</b>的候选，并在其中排名。'],
+          ['<code>RMSD</code>','<span class="a">越低越好</span>','设计姿态与验证阶段重新预测姿态之间的差异。数值大并不等于失败，应作候选间比较。']]}}},
+  {note:{ttl:{ko:'후보 고르는 순서', zh:'挑选候选的顺序'},
+         body:{ko:'먼저 pLDDT가 70 미만인 후보를 뺍니다. 다음으로 ipSAE가 0.65 미만인 후보를 뺍니다. 남은 후보를 ipSAE 내림차순으로 정렬해 위에서부터 1~3개를 고릅니다.',
+               zh:'先剔除 pLDDT 低于 70 的候选，再剔除 ipSAE 低于 0.65 的候选。将剩余候选按 ipSAE 降序排列，从上往下选 1~3 个。'}}},
+
+  {h3:{ko:'CDR 신뢰도 — 지표 상세 탭', zh:'CDR 置信度 — 指标详情标签页'}},
+  {p:{ko:'전체 평균 pLDDT는 프레임워크 때문에 항상 높게 나옵니다. 새로 설계한 부분은 CDR이므로 <b>CDR 구간의 pLDDT를 따로 봐야</b> 합니다.',
+      zh:'整体平均 pLDDT 因骨架区的缘故总是偏高。新设计的部分是 CDR，所以必须<b>单独查看 CDR 区段的 pLDDT</b>。'}},
+  {shot:{id:'08-conf-detail',
+    cap:{ko:'여섯 개 CDR 각각의 신뢰도를 확인합니다.', zh:'确认六个 CDR 各自的置信度。'},
+    items:{ko:['<b>지표 상세</b> 탭으로 바꿉니다.',
+               '<b>네 개 항목</b> — <code>구조 신뢰도</code>, <code>상대 배치</code>, <code>국소 interface</code>, <code>접촉</code>입니다. 이 단계에서는 <code>구조 신뢰도</code> 하나만 봅니다.',
+               '<b>CDR별 pLDDT</b> — H1·H2·H3·L1·L2·L3 여섯 칸입니다. 화면 예시에서는 L2가 58.5로 낮아 이 부분의 구조는 신뢰하기 어렵습니다.',
+               '<b>색 기준</b> — 50 이하 매우 낮음, 50–70 낮음, 70–90 높음, 90 초과 매우 높음입니다. 3D 화면도 같은 기준으로 색칠됩니다.'],
+           zh:['切换到 <b>指标详情</b> 标签页。',
+               '<b>四个项目</b> — <code>结构置信度</code>、<code>相对位置</code>、<code>局部 interface</code>、<code>接触</code>。本阶段只看 <code>结构置信度</code> 一项。',
+               '<b>各 CDR 的 pLDDT</b> — H1·H2·H3·L1·L2·L3 共六格。示例中 L2 为 58.5 偏低，该部分结构难以信赖。',
+               '<b>配色标准</b> — 50 以下极低、50–70 低、70–90 高、90 以上极高。3D 画面按同一标准着色。']}}},
+  {table:{
+    head:{ko:['CDR pLDDT','판정'], zh:['CDR pLDDT','判定']},
+    rows:{ko:[['<span class="g">70 이상</span>','해당 루프의 구조를 신뢰할 수 있습니다.'],
+              ['<span class="a">50 – 70</span>','유연한 루프이거나 예측이 불안정합니다. 다른 후보와 비교합니다.'],
+              ['<span class="r">50 미만</span>','신뢰할 수 없습니다. 해당 후보는 제외하거나 재설계합니다.']],
+           zh:[['<span class="g">70 以上</span>','该环的结构可信。'],
+               ['<span class="a">50 – 70</span>','可能是柔性环或预测不稳定。与其他候选比较。'],
+               ['<span class="r">低于 50</span>','不可信。排除该候选或重新设计。']]}}},
+
+  {h3:{ko:'나머지 세 항목', zh:'其余三个项目'}},
+  {p:{ko:'나머지 세 탭은 계면을 더 자세히 들여다보는 지표입니다. 값의 의미를 외울 필요는 없고, <b>여기에 이런 지표가 있다는 것만 알아 두면 됩니다.</b> 후보를 좁힌 뒤 왜 이 설계가 더 나은지 설명할 때 근거로 씁니다.',
+      zh:'其余三个标签页是更细致地观察界面的指标。不需要记住每个数值的含义，<b>知道这里有这些指标即可</b>。在缩小候选范围后，用它们来说明为何该设计更优。'}},
+  {shot:{id:'08b-metric-detail-tabs',
+    cap:{ko:'<code>국소 interface</code> 탭 예시. <code>접촉</code> 탭에는 접촉 수, f CDR(전체 접촉 중 CDR이 차지하는 비율), 접촉 잔기 수가 나옵니다.',
+         zh:'<code>局部 interface</code> 标签页示例。<code>接触</code> 标签页给出接触数、f CDR（CDR 在全部接触中所占比例）与接触残基数。'},
+    items:{ko:['<b>탭 전환</b> — <code>상대 배치</code>는 두 사슬이 전체적으로 어떻게 놓였는지, <code>국소 interface</code>는 계면의 일관성, <code>접촉</code>은 실제로 닿은 잔기 수를 봅니다.',
+               '<b>지표 값</b> — 참고용입니다. 예를 들어 <code>접촉</code> 탭의 f CDR이 높으면 프레임워크가 아니라 CDR로 결합하고 있다는 뜻이라 좋은 신호입니다.'],
+           zh:['<b>切换标签页</b> — <code>相对位置</code>看两条链整体如何摆放，<code>局部 interface</code>看界面的一致性，<code>接触</code>看实际接触的残基数。',
+               '<b>指标值</b> — 仅供参考。例如 <code>接触</code> 标签页的 f CDR 偏高，说明是靠 CDR 而非骨架结合，属于好信号。']}}},
+  {note:{ttl:{ko:'원자 겹침(clash)', zh:'原子重叠（clash）'},
+         body:{ko:'이 화면에는 clash 수치가 따로 나오지 않습니다. 설계 구조의 물리적 타당성은 3D 화면에서 계면을 확대해 직접 확인합니다.',
+               zh:'此界面不单独给出 clash 数值。设计结构的物理合理性请在 3D 画面中放大界面自行确认。'}}},
+
+  {h3:{ko:'서열과 구조 꺼내기', zh:'导出序列与结构'}},
+  {p:{ko:'다음 두 단계에 필요한 재료를 여기서 가져갑니다. TAP에는 구조 파일을, ImmuScope에는 서열을 씁니다.',
+      zh:'后两个阶段所需的材料在这里获取。TAP 用结构文件，ImmuScope 用序列。'}},
+  {shot:{id:'09-sequence-copy',
+    cap:{ko:'3D 화면 아래 서열 영역에서 체인별로 꺼낼 수 있습니다.', zh:'在 3D 画面下方的序列区域可按链导出。'},
+    items:{ko:['<b>체인 선택</b> — <code>H</code>(중쇄) 또는 <code>L</code>(경쇄)를 누릅니다. <code>A</code>는 항원입니다.',
+               '<b>서열 복사</b> — 선택한 체인의 서열이 복사됩니다. ImmuScope에 그대로 붙여 넣습니다. 옆의 <code>좌표 파일 저장</code>으로 구조 파일을 받습니다.'],
+           zh:['<b>选择链</b> — 点击 <code>H</code>（重链）或 <code>L</code>（轻链）。<code>A</code> 是抗原。',
+               '<b>复制序列</b> — 复制所选链的序列，可直接粘贴到 ImmuScope。旁边的 <code>保存坐标文件</code> 可下载结构文件。']}}},
+  {bad:{ttl:{ko:'반드시 best 구조를 씁니다', zh:'必须使用 best 结构'},
+        body:{ko:'결과 폴더에는 중간 산출물이 여러 개 들어 있습니다. 이 중 이름이 <code>_best.pdb</code>로 끝나는 파일만 <b>마지막 refolding(재접힘) 검증까지 끝난 최종 구조</b>입니다. 다음 단계에서 구조를 꺼낼 때는 항상 이 파일을 기준으로 합니다.',
+              zh:'结果文件夹中含有多个中间产物。其中只有文件名以 <code>_best.pdb</code> 结尾的，才是<b>完成最后 refolding（重折叠）验证的最终结构</b>。后续步骤取用结构时，一律以该文件为准。'}}}
+ ]
+},
+
+/* ==================== 3. TAP ==================== */
+{
+ id:'tap', num:'STEP 3',
+ nav:{ko:'3. 개발성 (TAP)', zh:'3. 可开发性 (TAP)'},
+ h2:{ko:'개발성 평가 — TAP', zh:'可开发性评估 — TAP'},
+ lede:{ko:'잘 결합하는 항체라도 응집하거나 점도가 높으면 약으로 만들 수 없습니다. TAP은 설계 항체의 구조적 성질을 임상 단계 항체들의 분포와 비교합니다.',
+       zh:'即使结合良好，若发生聚集或黏度过高也无法成药。TAP 将设计抗体的结构性质与临床阶段抗体的分布进行比较。'},
+ blocks:[
+  {shot:{id:'10-search-tap',
+    cap:{ko:'Ctrl+K로 <code>tap</code>을 검색해 엽니다.', zh:'用 Ctrl+K 搜索 <code>tap</code> 打开。'},
+    items:{ko:['<b>TAP</b> — 설명이 <code>Immune protein analysis</code>인 항목입니다.'],
+           zh:['<b>TAP</b> — 说明为 <code>Immune protein analysis</code> 的条目。']}}},
+  {shot:{id:'11-tap-input',
+    cap:{ko:'1단계에서 만든 설계 구조를 그대로 불러옵니다.', zh:'直接载入第 1 阶段生成的设计结构。'},
+    items:{ko:['<b>입력 방식</b> — <code>PDB 파일</code>을 선택합니다. 서열만 있을 때는 <code>서열 입력</code>을 쓰며, 이 경우 중쇄와 경쇄를 모두 넣어야 합니다.',
+               '<b>결과 폴더</b> — 왼쪽에서 <code>결과</code>를 누르면 지금까지 실행한 작업의 산출물이 나옵니다.',
+               '<b>파일 선택</b> — <code>_best.pdb</code>로 끝나는 파일을 고릅니다. 아래에서 자세히 봅니다.'],
+           zh:['<b>输入方式</b> — 选择 <code>PDB 文件</code>。只有序列时使用 <code>序列输入</code>，此时必须同时填入重链与轻链。',
+               '<b>结果文件夹</b> — 点击左侧 <code>结果</code>，列出此前运行作业的产物。',
+               '<b>选择文件</b> — 选择以 <code>_best.pdb</code> 结尾的文件。下面详细说明。']}}},
+  {shot:{id:'11b-file-picker-best',
+    cap:{ko:'파일이 11개 나오지만 쓸 수 있는 것은 하나뿐입니다.', zh:'虽然列出 11 个文件，但能用的只有一个。'},
+    items:{ko:['<b>결과</b> — 왼쪽에서 이 폴더를 누릅니다. 작업이 만든 산출물이 모두 여기 있습니다.',
+               '<b><code>RFantibody_0_dldesign_0_best.pdb</code></b> — 이 파일을 고릅니다. 파일 크기(436KB)가 다른 것들보다 큰데, 항체뿐 아니라 <b>항원까지 포함한 복합체 구조</b>이기 때문입니다.'],
+           zh:['<b>结果</b> — 点击左侧该文件夹。作业生成的全部产物都在这里。',
+               '<b><code>RFantibody_0_dldesign_0_best.pdb</code></b> — 选择此文件。其体积（436KB）比其他文件大，因为它是<b>包含抗原在内的复合物结构</b>。']}}},
+  {bad:{ttl:{ko:'다른 파일을 고르면 안 됩니다', zh:'不要选择其他文件'},
+        body:{ko:'<code>_best</code>가 붙은 파일만 <b>최종 refolding 구조</b>입니다. <code>_traj</code>는 설계 과정의 중간 기록, <code>target_*</code>와 <code>framework_*</code>는 입력 파일, <code>_dldesign_0.pdb</code>는 검증 전 단계입니다. 이 중 하나를 넣으면 TAP이 엉뚱한 구조를 평가하게 됩니다.',
+              zh:'只有带 <code>_best</code> 的文件才是<b>最终 refolding 结构</b>。<code>_traj</code> 是设计过程的中间记录，<code>target_*</code> 与 <code>framework_*</code> 是输入文件，<code>_dldesign_0.pdb</code> 是验证前的阶段。误用其中任何一个，TAP 就会评估错误的结构。'}}},
+  {shot:{id:'12-tap-chain',
+    cap:{ko:'어느 체인이 중쇄이고 경쇄인지 알려 줍니다.', zh:'指明哪条链是重链、哪条是轻链。'},
+    items:{ko:['<b>선택한 파일</b> — 오른쪽 3D 화면에 구조가 바로 표시됩니다.',
+               '<b>Heavy Chain ID</b> — 보통 <code>H</code>입니다.',
+               '<b>Light Chain ID</b> — 보통 <code>L</code>입니다. 3D 화면 아래 체인 배지에서 실제 이름을 확인할 수 있습니다.',
+               '<b>분석 시작</b> — 제출합니다.'],
+           zh:['<b>所选文件</b> — 右侧 3D 画面会立即显示结构。',
+               '<b>Heavy Chain ID</b> — 通常为 <code>H</code>。',
+               '<b>Light Chain ID</b> — 通常为 <code>L</code>。可在 3D 画面下方的链标签确认实际名称。',
+               '<b>开始分析</b> — 提交。']}}},
+
+  {h3:{ko:'결과 읽기 · 판정표', zh:'解读结果 · 判定表'}},
+  {p:{ko:'판정은 이 표 하나로 끝납니다. 다섯 개 지표의 값과 합격 여부가 함께 나옵니다.',
+      zh:'判定只看这一张表即可。五项指标的数值与是否合格一并给出。'}},
+  {shot:{id:'13-tap-metrics',
+    cap:{ko:'<code>tap_report_metrics.csv</code>. 오른쪽 위 <code>Download All</code>로 원본 파일을 받을 수 있습니다.',
+         zh:'<code>tap_report_metrics.csv</code>。可用右上角 <code>Download All</code> 下载原始文件。'},
+    items:{ko:['<b>Value</b> — 측정값입니다. 예시에서 PSH는 202.62입니다.',
+               '<b>Flag</b> — 판정입니다. <span class="g">GREEN</span>은 통과, <span class="r">RED</span>는 위험입니다. 예시에서는 PSH 하나만 RED입니다.',
+               '<b>Threshold</b> — 판정 기준입니다. <code>PSH &gt; 173.8 (Red - too high)</code>이므로 202.62는 기준을 넘었습니다.',
+               '<b>보기 전환</b> — 표 아이콘과 그래프 아이콘을 눌러 아래 다섯 개 그래프로 넘어갑니다.'],
+           zh:['<b>Value</b> — 测量值。示例中 PSH 为 202.62。',
+               '<b>Flag</b> — 判定。<span class="g">GREEN</span> 为通过，<span class="r">RED</span> 为危险。示例中只有 PSH 为 RED。',
+               '<b>Threshold</b> — 判定标准。因为 <code>PSH &gt; 173.8 (Red - too high)</code>，所以 202.62 已超标。',
+               '<b>切换视图</b> — 点击表格图标与图表图标，可切换到下面的五张图。']}}},
+  {bad:{ttl:{ko:'RED가 하나라도 있으면', zh:'只要出现一个 RED'},
+        body:{ko:'그 후보는 우선순위를 낮춥니다. 어떤 지표가 RED인지가 다음 설계에서 바꿀 항목을 알려 줍니다. 아래 대응표를 참고합니다.',
+              zh:'降低该候选的优先级。哪个指标为 RED，就指明了下次设计要修改的项目。参见下面的对照表。'}}},
+
+  {h3:{ko:'결과 읽기 · 분포 그래프', zh:'解读结果 · 分布图'}},
+  {p:{ko:'표의 숫자를 임상 항체들과 비교해 보여 줍니다. 파란 분포는 임상 항체들(TABS), <b class="g">초록 세로선</b>은 내 설계입니다. <b class="a">주황 점선</b>을 넘으면 주의, <b class="r">빨간 점선</b>을 넘으면 위험입니다.',
+      zh:'将表中数值与临床抗体作对比展示。蓝色分布是临床抗体（TABS），<b class="g">绿色竖线</b>是本设计。越过<b class="a">橙色虚线</b>需注意，越过<b class="r">红色虚线</b>为危险。'}},
+  {gal:[
+    {id:'13a-tap-cdrlen', t:{ko:'Total CDR Length', zh:'Total CDR Length'},
+      d:{ko:'여섯 CDR 길이의 합. 너무 길면 응집 위험이 커집니다.', zh:'六个 CDR 长度之和。过长则聚集风险增大。'}},
+    {id:'13b-tap-psh', t:{ko:'PSH', zh:'PSH'},
+      d:{ko:'CDR 주변 표면 소수성. 예시에서는 초록선이 빨간 점선 바깥에 있어 위험합니다.', zh:'CDR 周围表面疏水性。示例中绿线位于红色虚线之外，属危险。'}},
+    {id:'13c-tap-ppc', t:{ko:'PPC', zh:'PPC'},
+      d:{ko:'양전하 패치 크기. 클수록 위험합니다.', zh:'正电荷斑块大小。越大越危险。'}},
+    {id:'13d-tap-pnc', t:{ko:'PNC', zh:'PNC'},
+      d:{ko:'음전하 패치 크기. 클수록 위험합니다.', zh:'负电荷斑块大小。越大越危险。'}},
+    {id:'13e-tap-sfvcsp', t:{ko:'SFvCSP', zh:'SFvCSP'},
+      d:{ko:'중쇄와 경쇄의 전하 대칭성. 음수로 치우치면 응집 위험이 있습니다.', zh:'重链与轻链的电荷对称性。偏向负值则有聚集风险。'}}
+  ]},
+  {table:{
+    head:{ko:['범위를 벗어난 지표','다음 설계에서 바꿀 것'], zh:['超出范围的指标','下次设计要改的地方']},
+    rows:{ko:[['Total CDR Length','디자인 루프 지정값에서 CDR 길이를 줄입니다.'],
+              ['PSH','CDR의 소수성 잔기(F, W, I, L, V)를 줄입니다.'],
+              ['PPC','CDR의 양전하 잔기(R, K)를 줄입니다.'],
+              ['PNC','CDR의 음전하 잔기(D, E)를 줄입니다.'],
+              ['SFvCSP','중쇄와 경쇄 중 한쪽의 전하 잔기를 조정합니다.']],
+           zh:[['Total CDR Length','在设计环指定值中缩短 CDR 长度。'],
+               ['PSH','减少 CDR 中的疏水残基（F、W、I、L、V）。'],
+               ['PPC','减少 CDR 中的正电荷残基（R、K）。'],
+               ['PNC','减少 CDR 中的负电荷残基（D、E）。'],
+               ['SFvCSP','调整重链或轻链中一侧的带电残基。']]}}},
+  {warn:{ttl:{ko:'TAP의 범위', zh:'TAP 的适用范围'},
+         body:{ko:'TAP은 Fv(가변) 영역만 봅니다. Fc 영역은 반영하지 않으며 결합 친화도도 예측하지 않습니다. 구조적 성질만 평가합니다.',
+               zh:'TAP 只看 Fv（可变）区，不反映 Fc 区，也不预测结合亲和力，仅评估结构性质。'}}}
+ ]
+},
+
+/* ==================== 4. ImmuScope ==================== */
+{
+ id:'immuno', num:'STEP 4',
+ nav:{ko:'4. 면역원성 (ImmuScope)', zh:'4. 免疫原性 (ImmuScope)'},
+ h2:{ko:'면역원성 평가 — ImmuScope', zh:'免疫原性评估 — ImmuScope'},
+ lede:{ko:'설계한 CDR은 자연에 없던 서열입니다. 환자의 면역계가 이를 이물질로 인식하면 항-약물 항체가 생겨 약효가 떨어집니다. ImmuScope는 서열을 훑어 T세포 에피토프가 될 가능성이 높은 구간을 찾습니다.',
+       zh:'设计出的 CDR 是自然界不存在的序列。若患者免疫系统将其识别为异物，会产生抗药抗体导致药效下降。ImmuScope 扫描序列，找出可能成为 T 细胞表位的区段。'},
+ blocks:[
+  {shot:{id:'14-search-immuscope',
+    cap:{ko:'Ctrl+K로 <code>immuscope</code>를 검색합니다.', zh:'用 Ctrl+K 搜索 <code>immuscope</code>。'},
+    items:{ko:['<b>ImmuScope</b> — 아래 <code>TLimmuno2</code>도 비슷한 모델이지만 여기서는 ImmuScope를 씁니다.'],
+           zh:['<b>ImmuScope</b> — 下方的 <code>TLimmuno2</code> 是类似模型，此处使用 ImmuScope。']}}},
+  {h3:{ko:'1단계 · 서열 입력', zh:'第 1 步 · 输入序列'}},
+  {shot:{id:'15-immuscope-sequence',
+    cap:{ko:'앞에서 복사한 서열을 붙여 넣습니다.', zh:'粘贴先前复制的序列。'},
+    items:{ko:['<b>작업명</b> — <code>hc</code>, <code>lc</code>처럼 구분되게 적습니다. 중쇄와 경쇄를 <b>따로 두 번</b> 실행하므로 이름으로 구분해야 합니다.',
+               '<b>단백질 서열</b> — FASTA 헤더(<code>&gt;protein</code>) 없이 아미노산 문자만 붙여 넣습니다.'],
+           zh:['<b>作业名</b> — 填写如 <code>hc</code>、<code>lc</code> 以便区分。重链与轻链要<b>分两次</b>运行，需用名称区分。',
+               '<b>蛋白序列</b> — 不含 FASTA 表头（<code>&gt;protein</code>），只粘贴氨基酸字母。']}}},
+  {h3:{ko:'2단계 · allele 선택', zh:'第 2 步 · 选择 allele'}},
+  {shot:{id:'16-immuscope-allele',
+    cap:{ko:'어떤 면역형에서 평가할지 고릅니다.', zh:'选择在哪种免疫型上进行评估。'},
+    items:{ko:['<b>allele Type</b> — <code>DR</code>, <code>DQ</code>, <code>DP</code>를 체크합니다. 사람 기준이면 이 셋이면 충분하며 <code>Mouse</code>와 <code>BoLA</code>는 동물용입니다.',
+               '<b>선택된 allele</b> — 체크한 유형에 해당하는 대립유전자가 자동으로 채워집니다.',
+               '<b>예측 건수</b> — <code>112aa → 92 windows × 3 alleles = 276 predictions</code>처럼 계산량이 미리 표시됩니다. allele을 늘리면 그만큼 CU가 늘어납니다.',
+               '<b>분석 시작</b> — 제출합니다. 중쇄를 마치면 경쇄로 같은 과정을 반복합니다.'],
+           zh:['<b>allele Type</b> — 勾选 <code>DR</code>、<code>DQ</code>、<code>DP</code>。针对人类这三项即可，<code>Mouse</code> 与 <code>BoLA</code> 用于动物。',
+               '<b>已选 allele</b> — 根据勾选的类型自动填入对应等位基因。',
+               '<b>预测条数</b> — 会预先显示计算量，如 <code>112aa → 92 windows × 3 alleles = 276 predictions</code>。增加 allele 会相应增加 CU。',
+               '<b>开始分析</b> — 提交。重链完成后对轻链重复相同过程。']}}},
+
+  {h3:{ko:'결과 읽기', zh:'解读结果'}},
+  {p:{ko:'히트맵 세 장이 나옵니다. 가로축은 서열 위치, 세로축은 allele입니다. <b>색이 진한 칸이 위험 구간</b>입니다.',
+      zh:'会给出三张热图。横轴为序列位置，纵轴为 allele。<b>颜色越深的格子就是风险区段</b>。'}},
+  {note:{ttl:{ko:'표가 아니라 히트맵으로 봅니다', zh:'看热图而不是表格'},
+         body:{ko:'원본 <code>ImmuScope_SlidingWindow_Results.tsv</code>는 펩타이드와 allele 조합마다 한 행이라 2,000행이 넘습니다. 표로는 판단할 수 없으므로 히트맵으로 위험 구간을 먼저 찾고, 필요할 때만 해당 위치의 행을 확인합니다.',
+               zh:'原始文件 <code>ImmuScope_SlidingWindow_Results.tsv</code> 对每个肽段与 allele 组合各占一行，超过 2000 行，无法据此判断。请先用热图找出风险区段，必要时再查看该位置对应的行。'}}},
+  {gal:[
+    {id:'19-immuscope-el', t:{ko:'EL — MHC 제시', zh:'EL — MHC 提呈'},
+      d:{ko:'해당 구간이 MHC에 실려 표면에 제시될 확률입니다.', zh:'该区段被 MHC 装载并提呈到表面的概率。'}},
+    {id:'18-immuscope-cd4', t:{ko:'CD4 — T세포 반응', zh:'CD4 — T 细胞响应'},
+      d:{ko:'제시된 구간에 CD4+ T세포가 반응할 확률입니다.', zh:'CD4+ T 细胞对被提呈区段作出响应的概率。'}},
+    {id:'17-immuscope-im', t:{ko:'IM — 면역원성', zh:'IM — 免疫原性'},
+      d:{ko:'최종 면역원성 확률입니다. 판정은 이 값으로 합니다.', zh:'最终免疫原性概率。以此值作判定。'}}
+  ]},
+  {bad:{ttl:{ko:'해석 방향', zh:'解读方向'},
+        body:{ko:'점수가 높을수록 좋다는 설명은 백신 설계 기준입니다. 치료용 항체는 반대로 <b>점수가 낮아야 좋습니다.</b> IM 점수가 0.5를 넘는 구간이 많으면 그 후보는 면역원성 위험이 높습니다.',
+              zh:'“分数越高越好”是疫苗设计的标准。治疗性抗体相反，<b>分数越低越好</b>。若 IM 分数超过 0.5 的区段很多，该候选的免疫原性风险就高。'}}},
+  {table:{
+    head:{ko:['IM 점수','판정'], zh:['IM 分数','判定']},
+    rows:{ko:[['<span class="g">0.1 미만</span>','위험 낮음'],
+              ['<span class="a">0.1 – 0.5</span>','주의. 해당 구간의 위치를 확인합니다.'],
+              ['<span class="r">0.5 이상</span>','위험 구간. 아래 순서로 처리합니다.']],
+           zh:[['<span class="g">低于 0.1</span>','风险低'],
+               ['<span class="a">0.1 – 0.5</span>','需注意。确认该区段的位置。'],
+               ['<span class="r">0.5 以上</span>','风险区段。按下述顺序处理。']]}}},
+  {ul:{ko:['위험 구간의 <b>위치 번호</b>를 히트맵 가로축에서 읽습니다.',
+           '그 위치가 <b>CDR 안인지 프레임워크인지</b> 확인합니다.',
+           'CDR이면 우리가 설계한 서열이 원인이므로 재설계 대상입니다.',
+           '프레임워크면 1단계의 프레임워크 템플릿을 다른 것으로 바꿉니다.',
+           '중쇄와 경쇄 결과를 합쳐 후보별 위험 구간 개수를 셉니다.'],
+       zh:['在热图横轴上读出风险区段的<b>位置编号</b>。',
+           '确认该位置<b>在 CDR 内还是在骨架区</b>。',
+           '若在 CDR，原因是我们设计的序列，属于需重新设计的对象。',
+           '若在骨架区，则在第 1 步更换为其他框架模板。',
+           '合并重链与轻链的结果，统计各候选的风险区段数量。']}},
+  {warn:{ttl:{ko:'ImmuScope의 범위', zh:'ImmuScope 的适用范围'},
+         body:{ko:'CD4+ T세포 에피토프만 봅니다. CD8+ T세포는 MHCflurry를 쓰며 B세포 에피토프는 다루지 않습니다. 계산 예측이므로 실험 검증이 필요합니다.',
+               zh:'只针对 CD4+ T 细胞表位。CD8+ T 细胞请用 MHCflurry，不涵盖 B 细胞表位。这是计算预测，需要实验验证。'}}}
+ ]
+},
+
+/* ==================== 5. 정리 ==================== */
+{
+ id:'wrapup', num:'STEP 5',
+ nav:{ko:'5. 정리', zh:'5. 整理'},
+ h2:{ko:'정리', zh:'整理'},
+ lede:{ko:'네 단계 결과를 한 표로 모읍니다.', zh:'将四个阶段的结果汇总到一张表。'},
+ blocks:[
+  {table:{
+    head:{ko:['후보','pLDDT','ipSAE','CDR 최저 pLDDT','TAP','IM 0.5 초과 구간','판정'],
+          zh:['候选','pLDDT','ipSAE','CDR 最低 pLDDT','TAP','IM 超过 0.5 的区段','判定']},
+    rows:{ko:[['RFantibody_1','88.2','0.267','—','—','—','<span class="g">1순위</span>'],
+              ['RFantibody_4','89.5','0.028','58.5 (L2)','PSH 범위 밖','—','<span class="a">보류</span>'],
+              ['RFantibody_0','89.2','0.012','—','—','—','<span class="r">제외</span>']],
+           zh:[['RFantibody_1','88.2','0.267','—','—','—','<span class="g">第 1 顺位</span>'],
+               ['RFantibody_4','89.5','0.028','58.5 (L2)','PSH 超出范围','—','<span class="a">待定</span>'],
+               ['RFantibody_0','89.2','0.012','—','—','—','<span class="r">排除</span>']]}}},
+  {note:{ttl:{ko:'표 채우는 법', zh:'填表方法'},
+         body:{ko:'위 숫자는 화면 예시에서 가져온 값이며 빈칸은 직접 채웁니다. pLDDT와 ipSAE는 분포 탭, CDR 최저 pLDDT는 지표 상세 탭, TAP과 IM은 각 결과 화면에서 읽습니다.',
+               zh:'上表数字取自界面示例，空白处请自行填写。pLDDT 与 ipSAE 取自分布标签页，CDR 最低 pLDDT 取自指标详情标签页，TAP 与 IM 取自各自的结果界面。'}}},
+
+  {h3:{ko:'제출물', zh:'提交物'}},
+  {ul:{ko:['작업 ID와 사용한 입력값 (Result 화면의 입력 파일·파라미터 영역)',
+           '선정 후보의 복합체 구조 파일과 3D 화면 캡처',
+           '위 비교표',
+           'TAP 그래프 5장, ImmuScope 히트맵 3장',
+           '선정 이유와 다음 설계에서 바꿀 항목',
+           '한계 명시 — 계산 예측이며 실험 검증이 필요함'],
+       zh:['作业 ID 与所用输入值（Result 界面的输入文件·参数区域）',
+           '所选候选的复合物结构文件与 3D 画面截图',
+           '上述对比表',
+           'TAP 图 5 张、ImmuScope 热图 3 张',
+           '选择理由与下次设计要调整的项目',
+           '明示局限 — 这是计算预测，需要实验验证']}},
+
+  {h3:{ko:'자주 발생하는 오류', zh:'常见错误'}},
+  {table:{
+    head:{ko:['현상','원인','해결'], zh:['现象','原因','解决']},
+    rows:{
+      ko:[['결합 핵심 잔기를 고를 수 없음','항원 체인을 체크하지 않음','체인을 먼저 체크한 뒤 서열에서 선택합니다.'],
+          ['설계가 항원에 붙어 있지 않음','고른 잔기가 단백질 안쪽에 묻혀 있음','3D에서 표면에 드러난 잔기로 다시 고릅니다.'],
+          ['CDR 길이가 예상과 다름','IMGT 기준 길이를 입력함','자동으로 채워진 Chothia 기준 값을 그대로 둡니다.'],
+          ['TAP이 실행되지 않음','서열 입력 방식에서 한쪽 체인만 넣음','중쇄와 경쇄를 모두 넣거나 PDB 파일 방식을 씁니다.'],
+          ['ImmuScope 결과가 비어 있음','서열이 창 크기보다 짧음','전체 체인 서열을 넣습니다.'],
+          ['ImmuScope에 서열이 들어가지 않음','FASTA 헤더를 같이 붙여 넣음','<code>&gt;</code>로 시작하는 줄을 지웁니다.']],
+      zh:[['无法选择结合关键残基','未勾选抗原链','先勾选链，再在序列上选择。'],
+          ['设计没有结合到抗原上','所选残基埋在蛋白内部','在 3D 中改选表面暴露的残基。'],
+          ['CDR 长度与预期不符','填入了 IMGT 标准的长度','保留自动填入的 Chothia 标准值。'],
+          ['TAP 无法运行','序列输入方式下只填了一条链','同时填入重链与轻链，或改用 PDB 文件方式。'],
+          ['ImmuScope 结果为空','序列短于窗口大小','输入完整的链序列。'],
+          ['序列无法填入 ImmuScope','连同 FASTA 表头一起粘贴','删除以 <code>&gt;</code> 开头的行。']]}}}
+ ]
+}
+]};
+
+/* =========================== RENDER =========================== */
+let LANG = null;
+try{ LANG = localStorage.getItem('lang'); }catch(e){}
+if(LANG !== 'ko' && LANG !== 'zh')
+  LANG = (navigator.language||'').toLowerCase().startsWith('zh') ? 'zh' : 'ko';
+
+const L = s => (s && typeof s === 'object' && !Array.isArray(s)) ? (s[LANG] ?? s.ko) : s;
+
+function shot(b){
+  return `<div class="shot" data-fig="${b.id}">
+    <img src="images/${b.id}.png" alt="${b.id}" loading="lazy" style="display:none">
+    <div class="ph"><div class="key">${b.id}.png</div><div>${L(T.need)}</div></div>
+    <ol class="legend">${L(b.items).map(x=>`<li>${x}</li>`).join('')}</ol>
+    ${b.cap ? `<div class="cap">${L(b.cap)}</div>` : ''}
+  </div>`;
+}
+
+function gal(items){
+  return `<div class="gal">${items.map(it=>`
+    <figure data-fig="${it.id}">
+      <img src="images/${it.id}.png" alt="${it.id}" loading="lazy" style="display:none">
+      <div class="ph">${it.id}.png</div>
+      <figcaption><b>${L(it.t)}</b><span>${L(it.d)}</span></figcaption>
+    </figure>`).join('')}</div>`;
+}
+
+function block(b){
+  if(b.h3)   return `<h3>${L(b.h3)}</h3>`;
+  if(b.p)    return `<p>${L(b.p)}</p>`;
+  if(b.ul)   return `<ul>${L(b.ul).map(x=>`<li>${x}</li>`).join('')}</ul>`;
+  if(b.shot) return shot(b.shot);
+  if(b.gal)  return gal(b.gal);
+  if(b.table){
+    const h = L(b.table.head).map(x=>`<th>${x}</th>`).join('');
+    const r = L(b.table.rows).map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+    return `<div class="tw"><table><thead><tr>${h}</tr></thead><tbody>${r}</tbody></table></div>`;
+  }
+  for(const k of ['note','warn','bad'])
+    if(b[k]) return `<div class="${k}"><span class="ttl">${L(b[k].ttl)}</span><p>${L(b[k].body)}</p></div>`;
+  return '';
+}
+
+function render(){
+  document.documentElement.lang = LANG === 'zh' ? 'zh-CN' : 'ko';
+  document.title = L(T.brand);
+  document.getElementById('brand').innerHTML = `${L(T.brand)}<small>${L(T.brandsub)}</small>`;
+  document.getElementById('foot').textContent = L(T.foot);
+
+  let html = `<div class="hero">
+    <h1>${L(T.hero.title)}</h1>
+    <p>${L(T.hero.lede)}</p>
+    <div class="pipe">${L(T.hero.chips).map((c,i)=>(i?'<i>→</i>':'')+`<span>${c}</span>`).join('')}</div>
+  </div>`;
+
+  for(const s of T.sections)
+    html += `<section id="${s.id}">
+      <span class="snum">${s.num}</span>
+      <h2>${L(s.h2)}</h2>
+      <p class="lede">${L(s.lede)}</p>
+      ${s.blocks.map(block).join('')}
+    </section>`;
+
+  document.getElementById('main').innerHTML = html;
+  document.getElementById('toc').innerHTML =
+    T.sections.map(s=>`<li><a href="#${s.id}">${L(s.nav)}</a></li>`).join('');
+  document.querySelectorAll('.seg button').forEach(b=>
+    b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+
+  probe(); observe();
+}
+
+/* images/<id>.png 가 있으면 자리표시자를 치우고 이미지를 보여준다 */
+function probe(){
+  document.querySelectorAll('[data-fig]').forEach(f=>{
+    const img = f.querySelector('img'), ph = f.querySelector('.ph');
+    const p = new Image();
+    p.onload = ()=>{ img.style.display='block'; if(ph) ph.remove(); };
+    p.src = img.getAttribute('src');
+  });
+}
+
+let io=null;
+function observe(){
+  if(io) io.disconnect();
+  const links=[...document.querySelectorAll('nav.side a')];
+  io=new IntersectionObserver(es=>es.forEach(e=>{
+    if(e.isIntersecting) links.forEach(a=>
+      a.classList.toggle('active', a.getAttribute('href')==='#'+e.target.id));
+  }),{rootMargin:'-80px 0px -70% 0px'});
+  document.querySelectorAll('section[id]').forEach(s=>io.observe(s));
+}
+
+document.querySelectorAll('.seg button').forEach(b=>b.addEventListener('click',()=>{
+  LANG=b.dataset.lang;
+  try{ localStorage.setItem('lang',LANG); }catch(e){}
+  const y=window.scrollY; render(); window.scrollTo(0,y);
+}));
+document.getElementById('theme').addEventListener('click',()=>{
+  const next = document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  try{ localStorage.setItem('theme',next); }catch(e){}
+});
+try{ const th=localStorage.getItem('theme'); if(th) document.documentElement.setAttribute('data-theme',th); }catch(e){}
+document.getElementById('menu').addEventListener('click',()=>
+  document.getElementById('side').classList.toggle('open'));
+document.getElementById('side').addEventListener('click',e=>{
+  if(e.target.tagName==='A') document.getElementById('side').classList.remove('open');
+});
+
+render();
+</script>
+</body>
+</html>
